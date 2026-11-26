@@ -1,0 +1,6 @@
+{
+  "name": "HACKRIFAT PREMIUM V2",
+  "description": "Premium Aviator Style UI & Real-Time Signal Dashboard with Neon Blue & Pink Theme, Live Auto-Update, and Starry Galaxy Background.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
