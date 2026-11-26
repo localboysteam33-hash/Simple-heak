@@ -65,6 +65,9 @@ class HackrifatViewModel : ViewModel() {
   private val _apiEndpoint = MutableStateFlow("https://api.muninbhai.live/v2/stream")
   val apiEndpoint: StateFlow<String> = _apiEndpoint.asStateFlow()
 
+  private val _roundIntervalSeconds = MutableStateFlow(7L)
+  val roundIntervalSeconds: StateFlow<Long> = _roundIntervalSeconds.asStateFlow()
+
   private val _soundEnabled = MutableStateFlow(true)
   val soundEnabled: StateFlow<Boolean> = _soundEnabled.asStateFlow()
 
@@ -107,6 +110,11 @@ class HackrifatViewModel : ViewModel() {
     _apiEndpoint.value = url
   }
 
+  fun updateRoundInterval(seconds: Long) {
+    _roundIntervalSeconds.value = seconds
+    addChatMessage("System", "Round update interval changed to ${seconds}s", false)
+  }
+
   fun toggleSound(enabled: Boolean) {
     _soundEnabled.value = enabled
   }
@@ -143,8 +151,8 @@ class HackrifatViewModel : ViewModel() {
     updateJob?.cancel()
     updateJob = viewModelScope.launch {
       while (true) {
-        // Exactly 7 seconds per round as requested
-        delay(7000L)
+        val interval = _roundIntervalSeconds.value
+        delay(interval * 1000L)
         if (_connectionStatus.value == ConnectionStatus.LIVE) {
           val rawValue = Random.nextDouble(1.10, 5.80)
           val formatted = String.format(Locale.US, "%.2fx", rawValue)
@@ -167,11 +175,10 @@ class HackrifatViewModel : ViewModel() {
             if (updated.size > 10) updated.take(10) else updated
           }
 
-          // Add automated chat signal message every round update
           val statusText = if (rawValue >= 2.0) "High Multiplier Alert! 🚀" else "Safe Round Completed."
           addChatMessage(
             sender = "MUNIN_BHAI SIGNAL",
-            text = "Round R-${roundCounter - 1} finished at ${formatted}. $statusText",
+            text = "Round R-${roundCounter - 1} finished at ${formatted}. ($interval s interval) $statusText",
             isVip = true
           )
         }

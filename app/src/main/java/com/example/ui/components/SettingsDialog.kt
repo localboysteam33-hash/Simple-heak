@@ -2,7 +2,12 @@ package com.example.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,40 +37,87 @@ import com.example.ui.theme.NeonCyan
 import com.example.ui.theme.NeonPink
 import com.example.ui.theme.NeonPurple
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsDialog(
   apiEndpoint: String,
+  currentInterval: Long,
   soundEnabled: Boolean,
   vibrationEnabled: Boolean,
   onEndpointChange: (String) -> Unit,
+  onIntervalChange: (Long) -> Unit,
   onSoundChange: (Boolean) -> Unit,
   onVibrationChange: (Boolean) -> Unit,
   onTestConnection: () -> Unit,
   onDismiss: () -> Unit
 ) {
+  val intervalOptions = listOf(5L, 7L, 10L, 15L, 20L, 25L, 30L, 35L, 40L, 45L, 50L)
+
   Dialog(onDismissRequest = onDismiss) {
     Column(
       modifier = Modifier
         .fillMaxWidth()
         .background(CardBackground, RoundedCornerShape(20.dp))
         .border(1.dp, NeonPurple, RoundedCornerShape(20.dp))
-        .padding(20.dp)
+        .padding(18.dp)
     ) {
       Text(
-        text = "⚙ সেটিং / Settings",
+        text = "⚙ সেটিং / Round Interval",
         color = NeonPurple,
-        fontSize = 20.sp,
+        fontSize = 18.sp,
         fontWeight = FontWeight.Bold
       )
 
-      Spacer(modifier = Modifier.height(16.dp))
+      Spacer(modifier = Modifier.height(10.dp))
+
+      Text(
+        text = "Select Result Interval (Seconds):",
+        color = MutedText,
+        fontSize = 13.sp
+      )
+
+      Spacer(modifier = Modifier.height(6.dp))
+
+      FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        intervalOptions.forEach { secs ->
+          val isSelected = currentInterval == secs
+          Box(
+            modifier = Modifier
+              .background(
+                if (isSelected) NeonCyan else Color(0xFF150B2E),
+                RoundedCornerShape(12.dp)
+              )
+              .border(
+                1.dp,
+                if (isSelected) NeonCyan else NeonPurple,
+                RoundedCornerShape(12.dp)
+              )
+              .clickable { onIntervalChange(secs) }
+              .padding(horizontal = 10.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Text(
+              text = "${secs}s",
+              color = if (isSelected) Color(0xFF05000D) else LightText,
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold
+            )
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
 
       Text(
         text = "API Endpoint",
         color = MutedText,
-        fontSize = 14.sp
+        fontSize = 13.sp
       )
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(4.dp))
       OutlinedTextField(
         value = apiEndpoint,
         onValueChange = onEndpointChange,
@@ -80,7 +132,7 @@ fun SettingsDialog(
         singleLine = true
       )
 
-      Spacer(modifier = Modifier.height(16.dp))
+      Spacer(modifier = Modifier.height(12.dp))
 
       Row(
         modifier = Modifier.fillMaxWidth(),
@@ -89,6 +141,7 @@ fun SettingsDialog(
         Text(
           text = "Sound Effects",
           color = LightText,
+          fontSize = 13.sp,
           modifier = Modifier.weight(1f)
         )
         Switch(
@@ -105,6 +158,7 @@ fun SettingsDialog(
         Text(
           text = "Vibration Feedback",
           color = LightText,
+          fontSize = 13.sp,
           modifier = Modifier.weight(1f)
         )
         Switch(
@@ -114,20 +168,11 @@ fun SettingsDialog(
         )
       }
 
-      Spacer(modifier = Modifier.height(12.dp))
-
-      Text(
-        text = "এটি একটি প্রিমিয়াম এভিয়েটর ডিজাইন ও রিয়েল-টাইম সিগন্যাল ড্যাশবোর্ড। প্রদর্শিত ডেটা ডিজাইন ডেমো ও লাইভ স্ট্রিমিং সোর্স থেকে আসে।",
-        color = MutedText,
-        fontSize = 12.sp,
-        lineHeight = 16.sp
-      )
-
-      Spacer(modifier = Modifier.height(20.dp))
+      Spacer(modifier = Modifier.height(16.dp))
 
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         Button(
           onClick = onTestConnection,

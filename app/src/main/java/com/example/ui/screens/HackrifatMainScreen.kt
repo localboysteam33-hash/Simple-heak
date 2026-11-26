@@ -44,16 +44,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
-import com.example.data.ChatMessage
 import com.example.data.RoundItem
 import com.example.ui.components.ChatHistorySection
 import com.example.ui.components.ContactDialog
+import com.example.ui.components.HackerTerminalBackground
 import com.example.ui.components.PolashNeonHackerWidget
 import com.example.ui.components.PremiumPasswordDialog
 import com.example.ui.components.RoundRowItem
 import com.example.ui.components.SettingsDialog
-import com.example.ui.components.StarryGalaxyBackground
-import com.example.viewmodel.ConnectionStatus
+import com.example.ui.components.TerminalLogOverlay
 import com.example.viewmodel.HackrifatViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -62,7 +61,6 @@ import java.util.Locale
 @Composable
 fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
   val currentMultiplier by viewModel.currentMultiplier.collectAsStateWithLifecycle()
-  val connectionStatus by viewModel.connectionStatus.collectAsStateWithLifecycle()
   val roundHistory by viewModel.roundHistory.collectAsStateWithLifecycle()
   val chatMessages by viewModel.chatMessages.collectAsStateWithLifecycle()
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()
@@ -70,6 +68,7 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
   val isPremiumModalOpen by viewModel.isPremiumModalOpen.collectAsStateWithLifecycle()
   val isPremiumUnlocked by viewModel.isPremiumUnlocked.collectAsStateWithLifecycle()
   val apiEndpoint by viewModel.apiEndpoint.collectAsStateWithLifecycle()
+  val roundIntervalSeconds by viewModel.roundIntervalSeconds.collectAsStateWithLifecycle()
   val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
   val vibrationEnabled by viewModel.vibrationEnabled.collectAsStateWithLifecycle()
   val lastUpdateTime by viewModel.lastUpdateTime.collectAsStateWithLifecycle()
@@ -96,53 +95,71 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .background(Color(0xFF05000D))
+      .background(Color(0xFF000000))
   ) {
-    StarryGalaxyBackground()
+    HackerTerminalBackground()
 
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(12.dp),
+        .padding(10.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      // Top Bar
+      // Sticky Header with HEAK Logo on Top-Left
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
+        // HEAK Logo (Top-Left)
+        Box(
+          modifier = Modifier
+            .background(Color(0xFF180630), RoundedCornerShape(30.dp))
+            .border(1.5.dp, Color(0xFFFF16B9), RoundedCornerShape(30.dp))
+            .clickable { viewModel.addChatMessage("System", "HEAK Homepage reloaded for amaeclub.com", false) }
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(
+            text = "⚡ HEAK",
+            color = Color(0xFFFF16B9),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 1.sp
+          )
+        }
+
         // Clock Pill
         Box(
           modifier = Modifier
-            .weight(1.2f)
+            .weight(1f)
             .background(Color(0xCC09051D), RoundedCornerShape(40.dp))
             .border(1.dp, Color(0xFFBD91FF), RoundedCornerShape(40.dp))
-            .padding(vertical = 8.dp, horizontal = 6.dp),
+            .padding(vertical = 6.dp, horizontal = 4.dp),
           contentAlignment = Alignment.Center
         ) {
           Text(
             text = "◷ $clockTime",
             color = Color.White,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold
           )
         }
 
-        // VIP / Premium Status Button (1000 Years Free / Pass MUMIN3231)
+        // VIP / Premium Status Button (Pass MUMIN3231)
         Box(
           modifier = Modifier
-            .weight(1.1f)
+            .weight(1f)
             .background(if (isPremiumUnlocked) Color(0xFF00EFBD).copy(alpha = 0.2f) else Color(0xCC09051D), RoundedCornerShape(40.dp))
             .border(1.dp, if (isPremiumUnlocked) Color(0xFF00EFBD) else Color(0xFFFF16B9), RoundedCornerShape(40.dp))
             .clickable { viewModel.togglePremiumModal(true) }
-            .padding(vertical = 8.dp, horizontal = 6.dp),
+            .padding(vertical = 6.dp, horizontal = 4.dp),
           contentAlignment = Alignment.Center
         ) {
           Text(
-            text = if (isPremiumUnlocked) "👑 VIP 1000Y" else "🔒 VIP PASS",
+            text = if (isPremiumUnlocked) "👑 1000Y VIP" else "🔒 VIP PASS",
             color = if (isPremiumUnlocked) Color(0xFF00EFBD) else Color(0xFFFF16B9),
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold
           )
         }
@@ -150,23 +167,23 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
         // Settings Pill Button
         Box(
           modifier = Modifier
-            .weight(0.9f)
+            .weight(0.7f)
             .background(Color(0xCC09051D), RoundedCornerShape(40.dp))
             .border(1.dp, Color(0xFFBD91FF), RoundedCornerShape(40.dp))
             .clickable { viewModel.toggleSettings(true) }
-            .padding(vertical = 8.dp, horizontal = 6.dp),
+            .padding(vertical = 6.dp, horizontal = 4.dp),
           contentAlignment = Alignment.Center
         ) {
           Text(
             text = "⚙ সেটিং",
             color = Color.White,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold
           )
         }
       }
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(6.dp))
 
       // Brand Header Area with User Avatar (Left) and MUNIN_BHAI Title
       Row(
@@ -176,20 +193,20 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
       ) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(10.dp)
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
           Box(
             modifier = Modifier
-              .size(52.dp)
+              .size(45.dp)
               .background(Color(0xFF050008), CircleShape)
-              .border(2.5.dp, Color(0xFF00EFBD), CircleShape),
+              .border(2.dp, Color(0xFF00EFBD), CircleShape),
             contentAlignment = Alignment.Center
           ) {
             Image(
               painter = painterResource(id = R.drawable.munin_avatar),
               contentDescription = "Munin Bhai Avatar",
               modifier = Modifier
-                .size(48.dp)
+                .size(41.dp)
                 .clip(CircleShape),
               contentScale = ContentScale.Crop
             )
@@ -198,13 +215,13 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
           Column {
             Text(
               text = "MUNIN_BHAI ¡!",
-              fontSize = 16.sp,
+              fontSize = 14.sp,
               fontWeight = FontWeight.Black,
               color = Color(0xFF00EFBD)
             )
             Text(
-              text = "1000Y Free / VIP",
-              fontSize = 10.sp,
+              text = "amaeclub.com",
+              fontSize = 9.sp,
               color = Color(0xFFC8B5DF),
               fontWeight = FontWeight.Bold
             )
@@ -215,21 +232,26 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
           modifier = Modifier
             .background(Color(0xFF10072E), RoundedCornerShape(20.dp))
             .border(1.dp, Color(0xFF00EFBD), RoundedCornerShape(20.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
           Text(
-            text = "ACTIVE",
+            text = "SECURE",
             color = Color(0xFF00EFBD),
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold
           )
         }
       }
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(4.dp))
 
-      // POWERED BY POLASH Neon Hacker GIF / Animated Header Widget (Replacing Aviator logo)
+      // POWERED BY POLASH Neon Hacker Widget
       PolashNeonHackerWidget()
+
+      Spacer(modifier = Modifier.height(4.dp))
+
+      // Terminal Log Overlay for Cyberpunk Aesthetic
+      TerminalLogOverlay()
 
       Spacer(modifier = Modifier.height(4.dp))
 
@@ -237,44 +259,44 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
       Box(
         modifier = Modifier
           .fillMaxWidth()
-          .height(130.dp),
+          .height(105.dp),
         contentAlignment = Alignment.Center
       ) {
         Box(
           modifier = Modifier
-            .size(110.dp)
+            .size(90.dp)
             .rotate(rotationAngle)
             .border(2.dp, Color(0xFFA75AFF), RoundedCornerShape(12.dp))
         )
 
         Box(
           modifier = Modifier
-            .size(85.dp)
+            .size(70.dp)
             .background(Color(0xFF09051B), CircleShape)
             .border(2.5.dp, Color(0xFFA76AFF), CircleShape),
           contentAlignment = Alignment.Center
         ) {
           Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(4.dp)
+            modifier = Modifier.padding(2.dp)
           ) {
             Text(
-              text = if (isPremiumUnlocked) "👑 VIP SIGNAL" else "7s INTERVAL",
+              text = if (isPremiumUnlocked) "👑 VIP" else "${roundIntervalSeconds}s",
               color = Color(0xFFC8B5DF),
-              fontSize = 8.sp,
+              fontSize = 7.sp,
               textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             Text(
               text = currentMultiplier,
               color = Color(0xFFFF064B),
-              fontSize = 20.sp,
+              fontSize = 16.sp,
               fontWeight = FontWeight.Black
             )
             Text(
-              text = "AVIATOR",
+              text = "HEAK",
               color = Color.White,
-              fontSize = 8.sp,
+              fontSize = 7.sp,
               fontWeight = FontWeight.Bold,
               letterSpacing = 1.sp
             )
@@ -282,7 +304,7 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
         }
       }
 
-      Spacer(modifier = Modifier.height(4.dp))
+      Spacer(modifier = Modifier.height(2.dp))
 
       // Section Header for History
       Row(
@@ -293,9 +315,9 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
         verticalAlignment = Alignment.CenterVertically
       ) {
         Text(
-          text = "সাম্প্রতিক রাউন্ড হিস্ট্রি (7s Update)",
+          text = "amaeclub.com History (${roundIntervalSeconds}s)",
           color = Color(0xFF00EFBD),
-          fontSize = 11.sp,
+          fontSize = 10.sp,
           fontWeight = FontWeight.Bold
         )
         Text(
@@ -312,7 +334,7 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
         modifier = Modifier
           .fillMaxWidth()
           .weight(1f),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 2.dp)
       ) {
         items(roundHistory) { round: RoundItem ->
@@ -320,19 +342,19 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
         }
       }
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(4.dp))
 
       // Chat & Signal History Section
       ChatHistorySection(messages = chatMessages)
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(4.dp))
 
       // Contact US Button
       Button(
         onClick = { viewModel.toggleContact(true) },
         modifier = Modifier
           .fillMaxWidth()
-          .height(50.dp),
+          .height(45.dp),
         shape = RoundedCornerShape(40.dp),
         colors = ButtonDefaults.buttonColors(
           containerColor = Color(0xFFE5CCFF)
@@ -341,19 +363,21 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
         Text(
           text = "➤ CONTACT (@szxpolash)",
           color = Color(0xFF080018),
-          fontSize = 16.sp,
+          fontSize = 15.sp,
           fontWeight = FontWeight.Black
         )
       }
     }
 
-    // Settings Dialog
+    // Settings Dialog with Interval Selector
     if (isSettingsOpen) {
       SettingsDialog(
         apiEndpoint = apiEndpoint,
+        currentInterval = roundIntervalSeconds,
         soundEnabled = soundEnabled,
         vibrationEnabled = vibrationEnabled,
         onEndpointChange = { viewModel.updateApiEndpoint(it) },
+        onIntervalChange = { viewModel.updateRoundInterval(it) },
         onSoundChange = { viewModel.toggleSound(it) },
         onVibrationChange = { viewModel.toggleVibration(it) },
         onTestConnection = { viewModel.testConnection() },
