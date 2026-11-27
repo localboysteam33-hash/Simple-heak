@@ -42,17 +42,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.data.RoundItem
 import com.example.ui.components.ChatHistorySection
 import com.example.ui.components.ContactDialog
-import com.example.ui.components.HackerTerminalBackground
 import com.example.ui.components.PolashNeonHackerWidget
 import com.example.ui.components.PremiumPasswordDialog
 import com.example.ui.components.RoundRowItem
 import com.example.ui.components.SettingsDialog
 import com.example.ui.components.TerminalLogOverlay
+import com.example.ui.components.WebViewComposable
 import com.example.viewmodel.HackrifatViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -63,6 +64,7 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
   val currentMultiplier by viewModel.currentMultiplier.collectAsStateWithLifecycle()
   val roundHistory by viewModel.roundHistory.collectAsStateWithLifecycle()
   val chatMessages by viewModel.chatMessages.collectAsStateWithLifecycle()
+  val isResultsModalOpen by viewModel.isResultsModalOpen.collectAsStateWithLifecycle()
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()
   val isContactOpen by viewModel.isContactOpen.collectAsStateWithLifecycle()
   val isPremiumModalOpen by viewModel.isPremiumModalOpen.collectAsStateWithLifecycle()
@@ -97,31 +99,45 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
       .fillMaxSize()
       .background(Color(0xFF000000))
   ) {
-    HackerTerminalBackground()
-
+    // 1. Fullscreen WebView loading amarclub17.com behind everything
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(10.dp),
+        .padding(top = 55.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      // Sticky Header with HEAK Logo on Top-Left
+      WebViewComposable(
+        url = "https://amarclub17.com",
+        modifier = Modifier
+          .fillMaxWidth()
+          .weight(1f)
+      )
+    }
+
+    // 2. Sticky Header at the Top with HEAK Logo
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .background(Color(0xE605000D))
+        .padding(8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        // HEAK Logo (Top-Left)
+        // HEAK Logo (Top-Left) -> Clicking opens Results & Signals Modal
         Box(
           modifier = Modifier
             .background(Color(0xFF180630), RoundedCornerShape(30.dp))
             .border(1.5.dp, Color(0xFFFF16B9), RoundedCornerShape(30.dp))
-            .clickable { viewModel.addChatMessage("System", "HEAK Homepage reloaded for amaeclub.com", false) }
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .clickable { viewModel.toggleResultsModal(true) }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
           contentAlignment = Alignment.Center
         ) {
           Text(
-            text = "⚡ HEAK",
+            text = "⚡ HEAK 📊",
             color = Color(0xFFFF16B9),
             fontSize = 12.sp,
             fontWeight = FontWeight.Black,
@@ -182,190 +198,146 @@ fun HackrifatMainScreen(viewModel: HackrifatViewModel) {
           )
         }
       }
+    }
 
-      Spacer(modifier = Modifier.height(6.dp))
-
-      // Brand Header Area with User Avatar (Left) and MUNIN_BHAI Title
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    // 3. Floating Neon Trigger Button at Bottom-Right for Results & Signals
+    Box(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp),
+      contentAlignment = Alignment.BottomEnd
+    ) {
+      Button(
+        onClick = { viewModel.toggleResultsModal(true) },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF16B9)),
+        shape = RoundedCornerShape(30.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
       ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          Box(
-            modifier = Modifier
-              .size(45.dp)
-              .background(Color(0xFF050008), CircleShape)
-              .border(2.dp, Color(0xFF00EFBD), CircleShape),
-            contentAlignment = Alignment.Center
-          ) {
-            Image(
-              painter = painterResource(id = R.drawable.munin_avatar),
-              contentDescription = "Munin Bhai Avatar",
-              modifier = Modifier
-                .size(41.dp)
-                .clip(CircleShape),
-              contentScale = ContentScale.Crop
-            )
-          }
-
-          Column {
-            Text(
-              text = "MUNIN_BHAI ¡!",
-              fontSize = 14.sp,
-              fontWeight = FontWeight.Black,
-              color = Color(0xFF00EFBD)
-            )
-            Text(
-              text = "amaeclub.com",
-              fontSize = 9.sp,
-              color = Color(0xFFC8B5DF),
-              fontWeight = FontWeight.Bold
-            )
-          }
-        }
-
-        Box(
-          modifier = Modifier
-            .background(Color(0xFF10072E), RoundedCornerShape(20.dp))
-            .border(1.dp, Color(0xFF00EFBD), RoundedCornerShape(20.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-          Text(
-            text = "SECURE",
-            color = Color(0xFF00EFBD),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
-          )
-        }
-      }
-
-      Spacer(modifier = Modifier.height(4.dp))
-
-      // POWERED BY POLASH Neon Hacker Widget
-      PolashNeonHackerWidget()
-
-      Spacer(modifier = Modifier.height(4.dp))
-
-      // Terminal Log Overlay for Cyberpunk Aesthetic
-      TerminalLogOverlay()
-
-      Spacer(modifier = Modifier.height(4.dp))
-
-      // Stage Display (Compact Aviator Orb & Rotating Frame)
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(105.dp),
-        contentAlignment = Alignment.Center
-      ) {
-        Box(
-          modifier = Modifier
-            .size(90.dp)
-            .rotate(rotationAngle)
-            .border(2.dp, Color(0xFFA75AFF), RoundedCornerShape(12.dp))
+        Text(
+          text = "⚡ HEAK RESULTS ($currentMultiplier)",
+          color = Color.White,
+          fontWeight = FontWeight.Black,
+          fontSize = 14.sp
         )
+      }
+    }
 
-        Box(
+    // 4. HEAK Results & Signal Dashboard Dialog Overlay (triggered by HEAK logo or floating button)
+    if (isResultsModalOpen) {
+      Dialog(onDismissRequest = { viewModel.toggleResultsModal(false) }) {
+        Column(
           modifier = Modifier
-            .size(70.dp)
-            .background(Color(0xFF09051B), CircleShape)
-            .border(2.5.dp, Color(0xFFA76AFF), CircleShape),
-          contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .height(580.dp)
+            .background(Color(0xFF080314), RoundedCornerShape(22.dp))
+            .border(2.dp, Color(0xFF00EFBD), RoundedCornerShape(22.dp))
+            .padding(12.dp),
+          horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(2.dp)
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
           ) {
             Text(
-              text = if (isPremiumUnlocked) "👑 VIP" else "${roundIntervalSeconds}s",
-              color = Color(0xFFC8B5DF),
-              fontSize = 7.sp,
-              textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(1.dp))
-            Text(
-              text = currentMultiplier,
-              color = Color(0xFFFF064B),
-              fontSize = 16.sp,
+              text = "⚡ HEAK RESULTS & SIGNALS",
+              color = Color(0xFF00EFBD),
+              fontSize = 15.sp,
               fontWeight = FontWeight.Black
             )
+            Button(
+              onClick = { viewModel.toggleResultsModal(false) },
+              colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF16B9)),
+              shape = RoundedCornerShape(16.dp)
+            ) {
+              Text("Close", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+          }
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          PolashNeonHackerWidget()
+
+          Spacer(modifier = Modifier.height(4.dp))
+
+          TerminalLogOverlay()
+
+          Spacer(modifier = Modifier.height(4.dp))
+
+          // Stage Display
+          Box(
+            modifier = Modifier
+              .fillMaxWidth()
+              .height(90.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Box(
+              modifier = Modifier
+                .size(75.dp)
+                .rotate(rotationAngle)
+                .border(2.dp, Color(0xFFA75AFF), RoundedCornerShape(10.dp))
+            )
+
+            Box(
+              modifier = Modifier
+                .size(60.dp)
+                .background(Color(0xFF09051B), CircleShape)
+                .border(2.dp, Color(0xFFA76AFF), CircleShape),
+              contentAlignment = Alignment.Center
+            ) {
+              Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                  text = if (isPremiumUnlocked) "👑 VIP" else "${roundIntervalSeconds}s",
+                  color = Color(0xFFC8B5DF),
+                  fontSize = 7.sp
+                )
+                Text(
+                  text = currentMultiplier,
+                  color = Color(0xFFFF064B),
+                  fontSize = 15.sp,
+                  fontWeight = FontWeight.Black
+                )
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(4.dp))
+
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
             Text(
-              text = "HEAK",
-              color = Color.White,
-              fontSize = 7.sp,
-              fontWeight = FontWeight.Bold,
-              letterSpacing = 1.sp
+              text = "amarclub17.com History",
+              color = Color(0xFF00EFBD),
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold
+            )
+            Text(
+              text = "Sync: $lastUpdateTime",
+              color = Color(0xFFC8B5DF),
+              fontSize = 9.sp
             )
           }
+
+          Spacer(modifier = Modifier.height(2.dp))
+
+          LazyColumn(
+            modifier = Modifier
+              .fillMaxWidth()
+              .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+          ) {
+            items(roundHistory) { round: RoundItem ->
+              RoundRowItem(round = round)
+            }
+          }
+
+          Spacer(modifier = Modifier.height(4.dp))
+
+          ChatHistorySection(messages = chatMessages)
         }
-      }
-
-      Spacer(modifier = Modifier.height(2.dp))
-
-      // Section Header for History
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 4.dp, vertical = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Text(
-          text = "amaeclub.com History (${roundIntervalSeconds}s)",
-          color = Color(0xFF00EFBD),
-          fontSize = 10.sp,
-          fontWeight = FontWeight.Bold
-        )
-        Text(
-          text = "Sync: $lastUpdateTime",
-          color = Color(0xFFC8B5DF),
-          fontSize = 9.sp
-        )
-      }
-
-      Spacer(modifier = Modifier.height(2.dp))
-
-      // LazyColumn for Latest 10 Aviator Results
-      LazyColumn(
-        modifier = Modifier
-          .fillMaxWidth()
-          .weight(1f),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 2.dp)
-      ) {
-        items(roundHistory) { round: RoundItem ->
-          RoundRowItem(round = round)
-        }
-      }
-
-      Spacer(modifier = Modifier.height(4.dp))
-
-      // Chat & Signal History Section
-      ChatHistorySection(messages = chatMessages)
-
-      Spacer(modifier = Modifier.height(4.dp))
-
-      // Contact US Button
-      Button(
-        onClick = { viewModel.toggleContact(true) },
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(45.dp),
-        shape = RoundedCornerShape(40.dp),
-        colors = ButtonDefaults.buttonColors(
-          containerColor = Color(0xFFE5CCFF)
-        )
-      ) {
-        Text(
-          text = "➤ CONTACT (@szxpolash)",
-          color = Color(0xFF080018),
-          fontSize = 15.sp,
-          fontWeight = FontWeight.Black
-        )
       }
     }
 

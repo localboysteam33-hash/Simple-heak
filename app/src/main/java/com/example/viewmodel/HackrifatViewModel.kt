@@ -30,6 +30,9 @@ class HackrifatViewModel : ViewModel() {
   private val _connectionStatus = MutableStateFlow(ConnectionStatus.LIVE)
   val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus.asStateFlow()
 
+  private val _isResultsModalOpen = MutableStateFlow(false)
+  val isResultsModalOpen: StateFlow<Boolean> = _isResultsModalOpen.asStateFlow()
+
   private val _roundHistory = MutableStateFlow<List<RoundItem>>(
     listOf(
       RoundItem("R-2001", 1.85, "19:48:12", true),
@@ -43,9 +46,9 @@ class HackrifatViewModel : ViewModel() {
 
   private val _chatMessages = MutableStateFlow<List<ChatMessage>>(
     listOf(
-      ChatMessage("1", "MUNIN_BHAI BOT", "Welcome to MUNIN_BHAI VIP V2. 1000 Years Free Access Active!", "19:45", true),
+      ChatMessage("1", "MUNIN_BHAI BOT", "Welcome to amarclub17.com! Click HEAK floating badge for live prediction results.", "19:45", true),
       ChatMessage("2", "@szxpolash", "Enter password MUMIN3231 in VIP pass for premium signals.", "19:46", true),
-      ChatMessage("3", "System", "Connected to live Aviator server stream.", "19:47", false)
+      ChatMessage("3", "System", "Connected to amarclub17.com gateway with HEAK overlay.", "19:47", false)
     )
   )
   val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
@@ -62,7 +65,7 @@ class HackrifatViewModel : ViewModel() {
   private val _isPremiumUnlocked = MutableStateFlow(false)
   val isPremiumUnlocked: StateFlow<Boolean> = _isPremiumUnlocked.asStateFlow()
 
-  private val _apiEndpoint = MutableStateFlow("https://api.muninbhai.live/v2/stream")
+  private val _apiEndpoint = MutableStateFlow("https://amarclub17.com/v2/stream")
   val apiEndpoint: StateFlow<String> = _apiEndpoint.asStateFlow()
 
   private val _roundIntervalSeconds = MutableStateFlow(7L)
@@ -82,6 +85,10 @@ class HackrifatViewModel : ViewModel() {
 
   init {
     startLiveUpdates()
+  }
+
+  fun toggleResultsModal(open: Boolean) {
+    _isResultsModalOpen.value = open
   }
 
   fun toggleSettings(open: Boolean) {
